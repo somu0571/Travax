@@ -230,6 +230,19 @@ nodemon app.js
 # 📸 Screenshots
 
 Add screenshots of:
+<img width="1917" height="911" alt="Home Page" src="https://github.com/user-attachments/assets/b21a210f-a043-400d-88cc-4967e542f7bf" />
+
+<img width="1917" height="912" alt="Login Page" src="https://github.com/user-attachments/assets/5a042948-c3db-4cc5-bb43-49701d4dfb18" />
+
+<img width="1917" height="916" alt="Page 1" src="https://github.com/user-attachments/assets/28ad1564-b161-4f20-894b-9311ec29ef3f" />
+
+<img width="1911" height="911" alt="Screenshot 2026-07-07 102917" src="https://github.com/user-attachments/assets/7dbb823b-a255-46c5-a399-d553bf3ad6d6" />
+
+<img width="1918" height="906" alt="Screenshot 2026-07-07 102932" src="https://github.com/user-attachments/assets/6515183f-8722-4a6f-9aaf-242530dd7eae" />
+
+
+
+
 
 
 
