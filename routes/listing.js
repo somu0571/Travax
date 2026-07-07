@@ -54,7 +54,18 @@ router.get("/my-listings", isLoggedIn, wrapAsync(async (req, res) => {
     res.render("listings/myListings.ejs", { allListings });
 }));
 
-// Show Route
+// EDIT ROUTE (Added here so Express doesn't mistake "/edit" for an ":id")
+router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
+    let { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+        req.flash("error", "Listing you requested for does not exist!");
+        return res.redirect("/listings");
+    }
+    res.render("listings/edit.ejs", { listing });
+}));
+
+// Show Route (Kept below Edit Route)
 router.get("/:id", wrapAsync(async (req, res) => {
     let { id } = req.params;
     const listing = await Listing.findById(id)
@@ -92,15 +103,14 @@ router.post("/", isLoggedIn, upload.single("image"), validateListing, wrapAsync(
 
     try {
         const locationQuery = encodeURIComponent(req.body.listing.location);
-        const geocodeResponse = await axios.get(`https://nominatim.openstreetmap.org/search?q=${locationQuery}&format=json&limit=1`, {
-            headers: {
-                "User-Agent": "TravaxTravelPlatformProject/1.0 (somcha2006@gmail.com)"
-            }
-        });
+        const MAPTILER_API_KEY = process.env.MAPTILER_API_KEY || "IcH7tU3r7SPzLWIE8R8D";
 
-        if (geocodeResponse.data && geocodeResponse.data.length > 0) {
-            const lon = parseFloat(geocodeResponse.data[0].lon);
-            const lat = parseFloat(geocodeResponse.data[0].lat);
+        const geocodeResponse = await axios.get(
+            `https://api.maptiler.com/geocoding/${locationQuery}.json?key=${MAPTILER_API_KEY}&limit=1`
+        );
+
+        if (geocodeResponse.data && geocodeResponse.data.features && geocodeResponse.data.features.length > 0) {
+            const [lon, lat] = geocodeResponse.data.features[0].center;
 
             newListing.geometry = {
                 type: "Point",
@@ -110,6 +120,7 @@ router.post("/", isLoggedIn, upload.single("image"), validateListing, wrapAsync(
             newListing.geometry = { type: "Point", coordinates: [75.7873, 26.9124] };
         }
     } catch (err) {
+        console.error("Geocoding Error:", err.message);
         newListing.geometry = { type: "Point", coordinates: [75.7873, 26.9124] };
     }
 
@@ -118,31 +129,29 @@ router.post("/", isLoggedIn, upload.single("image"), validateListing, wrapAsync(
     res.redirect("/listings");
 }));
 
-// Edit Route
-router.get("/:id/edit", isLoggedIn, isOwner, wrapAsync(async (req, res) => {
-    let { id } = req.params;
-    const listing = await Listing.findById(id);
-    if (!listing) {
-        req.flash("error", "Listing Not Found!");
-        return res.redirect("/listings");
-    }
-    res.render("listings/edit.ejs", { listing });
-}));
-
 // Update Route
 router.put("/:id", isLoggedIn, isOwner, upload.single("image"), validateListing, wrapAsync(async (req, res) => {
     let { id } = req.params;
-    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing });
+
+    if (req.file) {
+        listing.image = {
+            url: req.file.path,
+            filename: req.file.filename
+        };
+        await listing.save();
+    }
 
     try {
         const locationQuery = encodeURIComponent(req.body.listing.location);
-        const geocodeResponse = await axios.get(`https://nominatim.openstreetmap.org/search?q=${locationQuery}&format=json&limit=1`, {
-            headers: { "User-Agent": "TravaxWebApplicationProject" }
-        });
+        const MAPTILER_API_KEY = process.env.MAPTILER_API_KEY || "IcH7tU3r7SPzLWIE8R8D";
 
-        if (geocodeResponse.data && geocodeResponse.data.length > 0) {
-            const lon = parseFloat(geocodeResponse.data[0].lon);
-            const lat = parseFloat(geocodeResponse.data[0].lat);
+        const geocodeResponse = await axios.get(
+            `https://api.maptiler.com/geocoding/${locationQuery}.json?key=${MAPTILER_API_KEY}&limit=1`
+        );
+
+        if (geocodeResponse.data && geocodeResponse.data.features && geocodeResponse.data.features.length > 0) {
+            const [lon, lat] = geocodeResponse.data.features[0].center;
 
             listing.geometry = {
                 type: "Point",
@@ -151,15 +160,7 @@ router.put("/:id", isLoggedIn, isOwner, upload.single("image"), validateListing,
             await listing.save();
         }
     } catch (err) {
-        console.error(err.message);
-    }
-
-    if (typeof req.file !== "undefined") {
-        listing.image = {
-            url: req.file.path,
-            filename: req.file.filename
-        };
-        await listing.save();
+        console.error("Geocoding Update Error:", err.message);
     }
 
     req.flash("success", "Listing Updated!");
