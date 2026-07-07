@@ -93,7 +93,9 @@ router.post("/", isLoggedIn, upload.single("image"), validateListing, wrapAsync(
     try {
         const locationQuery = encodeURIComponent(req.body.listing.location);
         const geocodeResponse = await axios.get(`https://nominatim.openstreetmap.org/search?q=${locationQuery}&format=json&limit=1`, {
-            headers: { "User-Agent": "TravaxWebApplicationProject" }
+            headers: {
+                "User-Agent": "TravaxTravelPlatformProject/1.0 (somcha2006@gmail.com)"
+            }
         });
 
         if (geocodeResponse.data && geocodeResponse.data.length > 0) {
