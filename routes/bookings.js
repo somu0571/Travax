@@ -105,8 +105,10 @@ router.post("/listings/:id/book", isLoggedIn, async (req, res) => {
             });
         }
 
-        const timeDiff = endDate.getTime() - startDate.getTime();
-        const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
+        const utcStart = Date.UTC(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const utcEnd = Date.UTC(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+
+        const nights = Math.floor((utcEnd - utcStart) / (1000 * 3600 * 24));
 
         if (nights <= 0) {
             return res.render("bookings/response.ejs", {
