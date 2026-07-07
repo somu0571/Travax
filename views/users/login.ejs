@@ -1,0 +1,44 @@
+<% layout("/layouts/boilerplate")%>
+
+    <div class="video-background">
+        <video autoplay muted loop playsinline>
+            <source src="/videos/video.mp4" type="video/mp4">
+        </video>
+        <div class="video-overlay"></div>
+    </div>
+
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                    <div class="card-body p-5">
+                        <h3 class="fw-bold mb-4 text-center">Welcome Back</h3>
+
+                        <form action="/login" method="POST" class="needs-validation" novalidate>
+                            <div class="mb-3">
+                                <label for="username" class="form-label text-muted">Username</label>
+                                <input type="text" id="username" name="username"
+                                    class="form-control form-control-lg rounded-3" required>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="password" class="form-label text-muted">Password</label>
+                                <input type="password" id="password" name="password"
+                                    class="form-control form-control-lg rounded-3" required>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-lg w-100 rounded-3 py-2 fw-bold"
+                                style="background-color: #ff385c; border: none;">
+                                Login
+                            </button>
+                        </form>
+
+                        <div class="text-center mt-4 text-secondary">
+                            <small>Don't have an account? <a href="/signup" class="text-decoration-none fw-bold"
+                                    style="color: #ff385c;">Sign up</a></small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

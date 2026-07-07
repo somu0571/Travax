@@ -1,0 +1,58 @@
+<% layout("/layouts/boilerplate")%>
+
+    <div class="container mt-5 text-center mb-5">
+        <% if (status==='success' ) { %>
+            <div class="alert alert-success p-5 shadow-sm border-0"
+                style="background-color: #f0fdf4; border-radius: 16px;">
+                <div class="mb-3">
+                    <i class="fa-solid fa-circle-check text-success" style="font-size: 3rem;"></i>
+                </div>
+                <h2 class="mb-3 font-weight-bold text-success">Booking Confirmed!</h2>
+                <p class="h5 mb-3">Welcome, <%= username %>!</p>
+                <p class="text-secondary mb-4">Pack your bags! Your stay at <strong>
+                        <%= listingName %>
+                    </strong> is officially locked in.</p>
+                <p class="text-muted mb-4">
+                    <%= message %>
+                </p>
+
+                <div class="card text-start mx-auto mb-4 shadow-sm"
+                    style="max-width: 450px; border-radius: 12px; border: 1px solid #e2e8f0;">
+                    <div class="card-header bg-white border-bottom-0 pt-3 pb-0">
+                        <h5 class="font-weight-bold mb-0">Reservation Details</h5>
+                    </div>
+                    <ul class="list-group list-group-flush rounded-4 p-2">
+                        <li class="list-group-item border-0 pb-1"><b>Listing:</b>
+                            <%= listingName %>
+                        </li>
+                        <li class="list-group-item border-0 pb-1"><b>Schedule:</b>
+                            <%= dates %>
+                        </li>
+                        <li class="list-group-item border-0 pb-1"><b>Guests:</b>
+                            <%= guests.adults %> Adults, <%= guests.children %> Kids
+                        </li>
+                        <li class="list-group-item border-0 pt-3 mt-2 border-top font-weight-bold"
+                            style="font-size: 1.1rem;">Total Paid: ₹<%= total.toLocaleString("en-IN") %>
+                        </li>
+                    </ul>
+                </div>
+
+                <a href="/listings" class="btn text-white px-4 py-2 font-weight-bold"
+                    style="background: linear-gradient(to right, #e61e4d 0%, #e31c5f 50%, #d70466 100%); border: none; border-radius: 8px;">Explore
+                    More Listings</a>
+            </div>
+            <% } else { %>
+                <div class="alert alert-danger p-5 shadow-sm border-0"
+                    style="background-color: #fef2f2; border-radius: 16px;">
+                    <div class="mb-3">
+                        <i class="fa-solid fa-circle-exclamation text-danger" style="font-size: 3rem;"></i>
+                    </div>
+                    <h2 class="mb-3 font-weight-bold text-danger">Booking Failed</h2>
+                    <p class="mb-4 text-dark">
+                        <%= message %>
+                    </p>
+                    <a href="javascript:history.back()" class="btn btn-outline-danger px-4 py-2 font-weight-bold"
+                        style="border-radius: 8px;">Go Back & Try Again</a>
+                </div>
+                <% } %>
+    </div>

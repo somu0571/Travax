@@ -1,0 +1,180 @@
+<div id="travax-chat-bubble" onclick="toggleChatWindow()">
+    <img src="/Logo.png" alt="Chat" style="width: 32px; height: 32px; object-fit: contain;">
+</div>
+
+<div id="travax-chat-popup" class="chat-popup-hidden">
+    <div class="chat-popup-header">
+        <span> Travax AI Guide</span>
+        <button onclick="toggleChatWindow()">&times;</button>
+    </div>
+    <div class="chat-popup-body" id="chat-conversation-flow">
+        <div class="chat-bubble-incoming">Hey traveler!  Ask me to find something sweet from our dataset! Try: "Show me cheap hotels" or "Recommend a beach stay".</div>
+    </div>
+    <div class="chat-popup-footer">
+        <input type="text" id="chat-user-query" placeholder="Type your query..." onkeypress="checkSubmitKey(event)">
+        <button onclick="processUserRequest()">Send</button>
+    </div>
+</div>
+
+<style>
+    #travax-chat-bubble {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        background: #ff385c;
+        color: white;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 9999;
+    }
+    #travax-chat-popup {
+        position: fixed;
+        bottom: 95px;
+        right: 25px;
+        width: 340px;
+        height: 450px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+        display: flex;
+        flex-direction: column;
+        z-index: 9999;
+        overflow: hidden;
+        font-family: sans-serif;
+    }
+    .chat-popup-hidden { 
+        display: none !important; 
+    }
+    .chat-popup-header { 
+        background: #ff385c; 
+        color: white; 
+        padding: 16px; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        font-weight: 600; 
+    }
+    .chat-popup-header button { 
+        background: none; 
+        border: none; 
+        color: white; 
+        font-size: 24px; 
+        cursor: pointer; 
+    }
+    .chat-popup-body { 
+        flex: 1; 
+        padding: 16px; 
+        overflow-y: auto; 
+        display: flex; 
+        flex-direction: column; 
+        gap: 12px; 
+        font-size: 14px; 
+        background: #f7f7f7; 
+    }
+    .chat-bubble-outgoing { 
+        background: #ff385c; 
+        color: white; 
+        align-self: flex-end; 
+        padding: 10px 14px; 
+        border-radius: 16px 16px 0 16px; 
+        max-width: 80%; 
+    }
+    .chat-bubble-incoming { 
+        background: white; 
+        color: #222; 
+        align-self: flex-start; 
+        padding: 10px 14px; 
+        border-radius: 16px 16px 16px 0; 
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1); 
+        max-width: 80%; 
+    }
+    .chat-popup-footer { 
+        padding: 12px; 
+        display: flex; 
+        gap: 8px; 
+        border-top: 1px solid #ebebeb; 
+        background: white; 
+    }
+    .chat-popup-footer input { 
+        flex: 1; 
+        padding: 10px 16px; 
+        border: 1px solid #b0b0b0; 
+        border-radius: 24px; 
+        outline: none; 
+    }
+    .chat-popup-footer button { 
+        background: #222; 
+        color: white; 
+        border: none; 
+        padding: 10px 18px; 
+        border-radius: 24px; 
+        cursor: pointer; 
+    }
+</style>
+
+<script>
+    let chatMemory = [];
+
+    function toggleChatWindow() {
+        document.getElementById("travax-chat-popup").classList.toggle("chat-popup-hidden");
+    }
+
+    function checkSubmitKey(e) {
+        if (e.key === "Enter") processUserRequest();
+    }
+
+    async function processUserRequest() {
+        const userInputField = document.getElementById("chat-user-query");
+        const messageContainer = document.getElementById("chat-conversation-flow");
+        const rawText = userInputField.value.trim();
+        
+        if (!rawText) return;
+
+        const sentBubble = document.createElement("div");
+        sentBubble.className = "chat-bubble-outgoing";
+        sentBubble.innerText = rawText;
+        messageContainer.appendChild(sentBubble);
+        userInputField.value = "";
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+
+        chatMemory.push({
+            role: "user",
+            parts: [{ text: rawText }]
+        });
+
+        const dynamicResponseBubble = document.createElement("div");
+        dynamicResponseBubble.className = "chat-bubble-incoming";
+        dynamicResponseBubble.innerText = "Searching Travax listings...";
+        messageContainer.appendChild(dynamicResponseBubble);
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+
+        try {
+            const networkResponse = await fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ history: chatMemory })
+            });
+            const parsedData = await networkResponse.json();
+            
+            const botReply = parsedData.reply || "Error fetching recommendations.";
+            dynamicResponseBubble.innerText = botReply;
+
+            chatMemory.push({
+                role: "model",
+                parts: [{ text: botReply }]
+            });
+
+        } catch (error) {
+            dynamicResponseBubble.innerText = "Error connecting to AI backend server.";
+        }
+        
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+</script>

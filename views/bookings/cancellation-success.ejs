@@ -1,0 +1,36 @@
+<% layout("/layouts/boilerplate") %>
+
+    <div class="container mt-5 mb-5 text-center">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow border-0 rounded-4 p-4">
+                    <div class="card-body">
+                        <i class="fa-solid fa-circle-check text-success mb-3" style="font-size: 4rem;"></i>
+                        <h2 class="fw-bold mb-3">Booking Cancelled</h2>
+                        <p class="text-muted">Your booking for <strong class="text-dark">
+                                <%= booking.listing.title %>
+                            </strong> has been successfully processed.</p>
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Refund Status:</span>
+                            <span
+                                class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">Processed</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Refund Amount:</span>
+                            <span class="fw-bold text-success">₹<%= booking.refundAmount.toLocaleString("en-IN") %>
+                                    </span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span class="text-muted">Reason Provided:</span>
+                            <span class="text-muted italic">"<%= booking.cancellationReason %>"</span>
+                        </div>
+
+                        <a href="/my-bookings" class="btn btn-dark w-100 mt-4 rounded-3">Back to My Bookings</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,384 @@
+<% layout("/layouts/boilerplate")%>
+
+  <link class="sub-link" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+  <div class="container mt-4">
+    <div class="row">
+      <div class="col-12">
+        <h3 class="mb-3 font-weight-bold">
+          <%= listing.title %>
+        </h3>
+      </div>
+    </div>
+
+    <div class="row mb-4">
+      <div class="col-12">
+        <img src="<%= listing.image.url %>" class="img-fluid rounded-4 shadow-sm w-100" alt="listing_image"
+          style="height: 450px; object-fit: cover;">
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 col-md-7">
+        <div class="pe-md-3">
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-1 text-dark">
+              <%= listing.location %>, <%= listing.country %>
+            </h5>
+            <p>Owned by <%= listing.owner.username %>
+            </p>
+          </div>
+          <p class="text-secondary mt-3" style="line-height: 1.6; font-size: 1.1rem;">
+            <%= listing.description %>
+          </p>
+
+          <% if(user && listing.owner._id.equals(user._id)) { %>
+            <div class="d-flex gap-3 align-items-center mb-4">
+              <a href="/listings/<%= listing._id %>/edit" class="btn btn-danger px-4 py-2"
+                style="background-color: #ff385c; border: none; border-radius: 8px; font-weight: 500;">Edit Page</a>
+
+              <form method="post" action="/listings/<%=listing._id%>?_method=DELETE" class="m-0">
+                <button class="btn btn-dark px-4 py-2"
+                  style="background-color: #222222; border: none; border-radius: 8px; font-weight: 500;">Delete
+                  Listing</button>
+              </form>
+            </div>
+            <% } %>
+
+              <hr class="my-4">
+
+              <h4 class="mb-3">Leave a Review</h4>
+              <form action="/listings/<%= listing._id %>/reviews" method="POST" novalidate
+                class="needs-validation mb-4">
+                <div class="mb-3">
+                  <label for="rating" class="form-label">Rating</label>
+                  <fieldset class="starability-basic">
+                    <input type="radio" id="no-rate" class="input-no-rate" name="review[rating]" value="1" checked
+                      aria-label="No rating." />
+                    <input type="radio" id="first-rate1" name="review[rating]" value="1" />
+                    <label for="first-rate1" title="Terrible">1 star</label>
+                    <input type="radio" id="first-rate2" name="review[rating]" value="2" />
+                    <label for="first-rate2" title="Not good">2 stars</label>
+                    <input type="radio" id="first-rate3" name="review[rating]" value="3" />
+                    <label for="first-rate3" title="Average">3 stars</label>
+                    <input type="radio" id="first-rate4" name="review[rating]" value="4" />
+                    <label for="first-rate4" title="Very good">4 stars</label>
+                    <input type="radio" id="first-rate5" name="review[rating]" value="5" />
+                    <label for="first-rate5" title="Amazing">5 stars</label>
+                  </fieldset>
+                </div>
+                <div class="mb-3">
+                  <label for="comment" class="form-label font-weight-bold">Comments</label>
+                  <textarea name="review[comment]" id="comment" rows="4" class="form-control"
+                    placeholder="Write your thoughts about the stay..." required></textarea>
+                  <div class="invalid-feedback">Please provide a small written comment for your review.</div>
+                </div>
+                <button class="btn btn-outline-dark px-4">Submit Review</button>
+              </form>
+
+              <% if(listing.reviews.length> 0) { %>
+                <hr class="my-4">
+                <p class="h5 mb-4"><b>All Guest Reviews</b></p>
+                <div class="row">
+                  <% for(let review of listing.reviews) { %>
+                    <div class="col-12 col-md-6 mb-4">
+                      <div class="card h-100 review-card">
+                        <div class="card-body p-4">
+                          <h6 class="review-username mb-1">
+                            <%= review.author ? review.author.username : "Anonymous" %>
+                          </h6>
+                          <p class="starability-result" data-rating="<%= review.rating %>"></p>
+                          <p class="review-comment">
+                            <%= review.comment %>
+                          </p>
+
+                          <% if(user && review.author && user._id.equals(review.author._id)) { %>
+                            <form method="POST"
+                              action="/listings/<%= listing._id %>/reviews/<%= review._id %>?_method=DELETE">
+                              <button class="btn btn-sm btn-outline-danger rounded-pill px-3">Delete</button>
+                            </form>
+                            <% } %>
+
+                        </div>
+                      </div>
+                    </div>
+                    <% } %>
+                </div>
+                <% } %>
+        </div>
+      </div>
+
+      <div class="col-12 col-md-5 mt-4 mt-md-0">
+        <div class="card shadow border-light p-4 sticky-top" style="top: 100px; z-index: 10; border-radius: 16px;">
+          <div class="d-flex justify-content-between align-items-baseline mb-3">
+            <span class="h4 mb-0">₹<%= listing.price.toLocaleString("en-IN") %></span>
+            <span class="text-secondary">/ night</span>
+          </div>
+
+          <form id="booking-form" action="/listings/<%= listing._id %>/book" method="POST"
+            data-price="<%= listing.price %>">
+
+            <div class="mb-3 border rounded-3 p-2">
+              <label class="form-label text-uppercase text-muted font-weight-bold mb-1"
+                style="font-size: 0.75rem;">Dates</label>
+              <input type="text" id="date-range-picker" name="dateRange"
+                class="form-control border-0 p-0 shadow-none bg-transparent" placeholder="Select travel dates" required>
+            </div>
+
+            <div class="mb-3 border rounded-3 p-2">
+              <label class="form-label text-uppercase text-muted font-weight-bold mb-1"
+                style="font-size: 0.75rem;">Select Exact Timings</label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <select name="checkInSlot" id="checkInSlot"
+                    class="form-select border-0 p-0 shadow-none bg-transparent"
+                    style="font-size: 0.90rem; cursor: pointer;" required>
+                    <option value="" disabled selected>Check-In Time</option>
+                    <option value="09:00 AM">09:00 AM</option>
+                    <option value="11:00 AM">11:00 AM</option>
+                    <option value="01:00 PM">01:00 PM</option>
+                    <option value="03:00 PM">03:00 PM</option>
+                    <option value="05:00 PM">05:00 PM</option>
+                    <option value="07:00 PM">07:00 PM</option>
+                  </select>
+                </div>
+                <div class="col-6 border-start ps-2">
+                  <select name="checkOutSlot" id="checkOutSlot"
+                    class="form-select border-0 p-0 shadow-none bg-transparent"
+                    style="font-size: 0.90rem; cursor: pointer;" required>
+                    <option value="" disabled selected>Check-Out Time</option>
+                    <option value="08:00 AM">08:00 AM</option>
+                    <option value="10:00 AM">10:00 AM</option>
+                    <option value="12:00 PM">12:00 PM</option>
+                    <option value="02:00 PM">02:00 PM</option>
+                    <option value="04:00 PM">04:00 PM</option>
+                    <option value="06:00 PM">06:00 PM</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="mb-3 border rounded-3 p-2">
+              <label class="form-label text-uppercase text-muted font-weight-bold mb-1"
+                style="font-size: 0.75rem;">Guests</label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <select name="adults" id="adults" class="form-select border-0 p-0 shadow-none bg-transparent"
+                    style="font-size: 0.95rem; cursor: pointer;">
+                    <option value="1" selected>1 Adult</option>
+                    <option value="2">2 Adults</option>
+                    <option value="3">3 Adults</option>
+                    <option value="4">4 Adults</option>
+                  </select>
+                </div>
+                <div class="col-6 border-start ps-2">
+                  <select name="children" id="children" class="form-select border-0 p-0 shadow-none bg-transparent"
+                    style="font-size: 0.95rem; cursor: pointer;">
+                    <option value="0" selected>0 Kids</option>
+                    <option value="1">1 Kid</option>
+                    <option value="2">2 Kids</option>
+                    <option value="3">3 Kids</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div id="price-breakdown" class="mb-3 d-none animate__animated animate__fadeIn" style="font-size: 0.95rem;">
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted" id="base-nights-label">₹<%= listing.price.toLocaleString("en-IN") %> x 1
+                    night</span>
+                <span class="text-dark" id="base-price-display">₹0</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span class="text-muted">GST (18%)</span>
+                <span class="text-dark" id="tax-price-display">₹0</span>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between mb-3 font-weight-bold" style="font-size: 1.05rem;">
+                <span>Total Payment</span>
+                <span id="total-price-display">₹0</span>
+              </div>
+            </div>
+
+            <button type="button" id="pay-btn" class="btn text-white w-100 py-3 mb-3 font-weight-bold"
+              style="background: linear-gradient(to right, #e61e4d 0%, #e31c5f 50%, #d70466 100%); border: none; border-radius: 8px; font-size: 1.05rem;">
+              Pay & Reserve
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-12 mb-5">
+        <hr />
+        <h4 class="mb-3" style="text-align: center;">Where you'll be</h4>
+        <div id="map" style="height: 400px; width: 100%; border-radius: 1rem; z-index: 1;"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let calculatedTotalAmount = 0;
+    let selectedDatesArray = [];
+    const bookingFormElement = document.getElementById("booking-form");
+    const checkInSelect = document.getElementById("checkInSlot");
+    const checkOutSelect = document.getElementById("checkOutSlot");
+
+    function resetTimeDropdowns() {
+      [checkInSelect, checkOutSelect].forEach(select => {
+        Array.from(select.options).forEach(option => {
+          if (option.value !== "") {
+            option.disabled = false;
+            option.innerText = option.value;
+          }
+        });
+      });
+    }
+
+    async function updateAvailableSlots(startString, endString) {
+      resetTimeDropdowns();
+
+      try {
+        const response = await fetch(`/listings/<%= listing._id %>/blocked-slots?start=${startString}&end=${endString}`);
+        const data = await response.json();
+
+        data.blockedSlots.forEach(slot => {
+          Array.from(checkInSelect.options).forEach(option => {
+            if (option.value === slot.checkIn) {
+              option.disabled = true;
+              option.innerText = `${option.value} (Unavailable)`;
+            }
+          });
+
+          Array.from(checkOutSelect.options).forEach(option => {
+            if (option.value === slot.checkOut) {
+              option.disabled = true;
+              option.innerText = `${option.value} (Unavailable)`;
+            }
+          });
+        });
+      } catch (error) {
+        console.error("Error synchronization processing chronological availability matrix:", error);
+      }
+    }
+
+    function calculateBill() {
+      if (selectedDatesArray.length === 2 && checkInSelect.value && checkOutSelect.value) {
+        const startDate = selectedDatesArray[0];
+        const endDate = selectedDatesArray[1];
+
+        const nights = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+
+        if (nights > 0) {
+          const pricePerNight = Number(bookingFormElement.dataset.price);
+          const basePrice = pricePerNight * nights;
+          const taxPrice = Math.round(basePrice * 0.18);
+          calculatedTotalAmount = basePrice + taxPrice;
+
+          document.getElementById("base-nights-label").innerText = `₹${pricePerNight.toLocaleString("en-IN")} x ${nights} night${nights > 1 ? 's' : ''}`;
+          document.getElementById("base-price-display").innerText = `₹${basePrice.toLocaleString("en-IN")}`;
+          document.getElementById("tax-price-display").innerText = `₹${taxPrice.toLocaleString("en-IN")}`;
+          document.getElementById("total-price-display").innerText = `₹${calculatedTotalAmount.toLocaleString("en-IN")}`;
+
+          document.getElementById("price-breakdown").classList.remove("d-none");
+        }
+      } else {
+        document.getElementById("price-breakdown").classList.add("d-none");
+        calculatedTotalAmount = 0;
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      flatpickr("#date-range-picker", {
+        mode: "range",
+        minDate: "today",
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "F j, Y",
+        altInputClass: "form-control border-0 p-0 shadow-none bg-transparent",
+        onChange: function (selectedDates, dateStr, instance) {
+          selectedDatesArray = selectedDates;
+
+          if (selectedDates.length === 2) {
+            const startStr = instance.formatDate(selectedDates[0], "Y-m-d");
+            const endStr = instance.formatDate(selectedDates[1], "Y-m-d");
+            updateAvailableSlots(startStr, endStr);
+          } else {
+            resetTimeDropdowns();
+          }
+          calculateBill();
+        }
+      });
+
+      checkInSelect.addEventListener("change", calculateBill);
+      checkOutSelect.addEventListener("change", calculateBill);
+    });
+
+    document.getElementById('pay-btn').onclick = async function (e) {
+      e.preventDefault();
+
+      const user = "<%= user ? user._id : '' %>";
+      if (!user) {
+        alert("You must be logged in to book!");
+        window.location.href = "/login";
+        return;
+      }
+
+      const dateRange = document.getElementById('date-range-picker').value;
+      const inSlot = checkInSelect.value;
+      const outSlot = checkOutSelect.value;
+
+      if (!dateRange || !inSlot || !outSlot || calculatedTotalAmount === 0) {
+        alert("Please confirm valid non-conflicting calendar dates and hours before checking out!");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/listings/<%= listing._id %>/check-conflict`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dateRange, checkInSlot: inSlot, checkOutSlot: outSlot })
+        });
+
+        const data = await res.json();
+
+        if (data.conflict) {
+          alert("This slot is no longer available. Someone booked it while you were browsing! Refreshing page...");
+          window.location.reload();
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to validate booking status.", err);
+      }
+
+      var options = {
+        "key": "<%= razorpayKeyId %>",
+        "amount": Math.round(calculatedTotalAmount * 100),
+        "currency": "INR",
+        "name": "Travax, Inc.",
+        "description": "Secure Real-Time Booking Engine",
+        "handler": function (response) {
+          bookingFormElement.submit();
+        },
+        "prefill": {
+          "name": "<%= user ? user.username : 'Guest' %>",
+          "email": "<%= user ? user.email : '' %>",
+          "contact": "9999999999"
+        },
+        "theme": {
+          "color": "#ff385c"
+        }
+      };
+
+      var rzp1 = new Razorpay(options);
+      rzp1.open();
+    }
+  </script>
+  <script>
+    var coordinates = JSON.parse('<%- JSON.stringify(listing.geometry && listing.geometry.coordinates ? listing.geometry.coordinates : [75.7873, 26.9124]) %>');
+    var listingTitle = "<%= listing.title %>";
+  </script>
+  <script src="/js/map.js"></script>
