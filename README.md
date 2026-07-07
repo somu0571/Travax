@@ -12,7 +12,7 @@
 
 ## 📖 About
 
-**Travax** is a full-stack travel accommodation booking platform inspired by Airbnb, built using **MongoDB Atlas, Express.js, Node.js, EJS, and Bootstrap**. It enables users to discover destinations, explore unique accommodations, list their own properties, book stays securely, and receive AI-powered travel recommendations—all through a clean, responsive, and intuitive interface.
+**Travax** is a full-stack travel accommodation booking platform built using **MongoDB Atlas, Express.js, Node.js, EJS, and Bootstrap**. It enables users to discover destinations, explore unique accommodations, list their own properties, book stays securely, and receive AI-powered travel recommendations—all through a clean, responsive, and intuitive interface.
 
 Unlike many booking platforms that separate **Hosts** and **Guests**, **Travax follows a unified user model**. Every registered user can seamlessly switch between being a **host** and a **traveler** using the same account. Users can publish their own accommodations while also booking properties listed by other users, creating a flexible and community-driven travel experience.
 
